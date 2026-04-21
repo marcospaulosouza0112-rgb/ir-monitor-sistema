@@ -1,0 +1,1354 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>IR Monitor — Connex Soluções Contábeis</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@500;600;700&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#F7F6F2;--surface:#fff;--surface2:#F0EFE9;
+  --text:#1A1916;--text2:#6B6A65;--text3:#A8A7A3;
+  --border:#E2E1DA;--border2:#D0CFC8;
+  --green:#3B6D11;--green-bg:#EAF3DE;--green-mid:#639922;
+  --amber:#854F0B;--amber-bg:#FAEEDA;--amber-mid:#BA7517;
+  --red:#A32D2D;--red-bg:#FCEBEB;--red-mid:#E24B4A;
+  --blue:#185FA5;--blue-bg:#E6F1FB;--blue-mid:#378ADD;
+  --gray:#5F5E5A;--gray-bg:#F1EFE8;
+}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);font-size:14px}
+h1,h2,h3,.syne{font-family:'Syne',sans-serif}
+
+/* LOGIN */
+.login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;background:var(--text)}
+.login-card{background:#fff;border-radius:16px;padding:40px;width:380px;text-align:center}
+.login-logo{font-family:'Syne',sans-serif;font-size:22px;font-weight:700;margin-bottom:4px}
+.login-sub{font-size:12px;color:var(--text3);margin-bottom:28px}
+.login-err{background:var(--red-bg);color:var(--red);border:1px solid #F7C1C1;border-radius:8px;padding:10px;font-size:13px;margin-bottom:12px;display:none}
+
+/* APP */
+.app{display:flex;height:100vh;overflow:hidden}
+.sidebar{width:220px;background:var(--text);display:flex;flex-direction:column;flex-shrink:0}
+.sidebar-logo{padding:20px 18px;border-bottom:1px solid rgba(255,255,255,0.08)}
+.sidebar-logo h1{font-size:15px;font-weight:700;color:#fff}
+.sidebar-logo small{font-size:10px;color:rgba(255,255,255,0.3);display:block;margin-top:2px}
+.nav-group{padding:16px 14px 5px;font-size:10px;letter-spacing:1px;color:rgba(255,255,255,0.25);font-family:'Syne',sans-serif}
+.nav-item{display:flex;align-items:center;gap:9px;padding:9px 18px;cursor:pointer;color:rgba(255,255,255,0.55);font-size:13px;border-left:2px solid transparent;transition:all 0.15s}
+.nav-item:hover{color:#fff;background:rgba(255,255,255,0.05)}
+.nav-item.active{color:#fff;background:rgba(255,255,255,0.08);border-left-color:#97C459}
+.nav-icon{width:15px;height:15px;flex-shrink:0}
+.sidebar-footer{margin-top:auto;padding:14px 18px;border-top:1px solid rgba(255,255,255,0.08)}
+.sidebar-footer p{font-size:11px;color:rgba(255,255,255,0.25);cursor:pointer}
+.sidebar-footer p:hover{color:rgba(255,255,255,0.5)}
+
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:12px 24px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;gap:12px}
+.topbar-left{display:flex;align-items:center;gap:10px}
+.topbar-title{font-family:'Syne',sans-serif;font-size:16px;font-weight:600}
+.topbar-right{display:flex;gap:8px;align-items:center}
+.content{flex:1;overflow-y:auto;padding:24px}
+
+/* Botões */
+.btn{padding:8px 14px;border-radius:7px;font-size:13px;font-weight:500;cursor:pointer;border:none;transition:all 0.15s;font-family:'DM Sans',sans-serif;display:inline-flex;align-items:center;gap:5px}
+.btn-primary{background:var(--text);color:#fff}.btn-primary:hover{background:#333}
+.btn-outline{background:transparent;color:var(--text2);border:1px solid var(--border2)}.btn-outline:hover{background:var(--surface2)}
+.btn-green{background:var(--green-bg);color:var(--green);border:1px solid #C0DD97}.btn-green:hover{background:#d6ecb5}
+.btn-red{background:var(--red-bg);color:var(--red);border:1px solid #F7C1C1}
+.btn-sm{padding:5px 10px;font-size:12px}
+.btn:disabled{opacity:0.5;cursor:not-allowed}
+
+/* Cards */
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 16px}
+.stat-label{font-size:11px;color:var(--text3);font-weight:600;letter-spacing:0.3px;margin-bottom:5px;font-family:'Syne',sans-serif}
+.stat-value{font-size:24px;font-weight:700;font-family:'Syne',sans-serif;letter-spacing:-0.5px}
+.stat-sub{font-size:11px;color:var(--text3);margin-top:3px}
+
+/* Badges */
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:600;font-family:'Syne',sans-serif;white-space:nowrap}
+.badge-dot{width:5px;height:5px;border-radius:50%;background:currentColor;flex-shrink:0}
+.b-green{background:var(--green-bg);color:var(--green)}
+.b-amber{background:var(--amber-bg);color:var(--amber)}
+.b-red{background:var(--red-bg);color:var(--red)}
+.b-blue{background:var(--blue-bg);color:var(--blue)}
+.b-gray{background:var(--gray-bg);color:var(--gray)}
+
+/* Tabela */
+.table-wrap{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden}
+.t-head{display:grid;padding:10px 14px;background:var(--surface2);border-bottom:1px solid var(--border);font-size:11px;font-weight:600;color:var(--text3);letter-spacing:0.4px;font-family:'Syne',sans-serif}
+.t-row{display:grid;padding:11px 14px;border-bottom:1px solid var(--border);align-items:center;transition:background 0.1s}
+.t-row:last-child{border-bottom:none}
+.t-row:hover{background:var(--surface2)}
+.client-name{font-weight:500;font-size:13px}
+
+/* Filtros */
+.filters{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+.pill{padding:5px 12px;border-radius:20px;font-size:12px;cursor:pointer;border:1px solid var(--border);background:var(--surface);color:var(--text2);transition:all 0.15s;font-weight:500}
+.pill.on{background:var(--text);color:#fff;border-color:var(--text)}
+.search-wrap{display:flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:0 12px;margin-bottom:12px}
+.search-wrap input{border:none;outline:none;flex:1;padding:9px 0;font-size:13px;background:transparent;color:var(--text);font-family:'DM Sans',sans-serif}
+.search-wrap input::placeholder{color:var(--text3)}
+
+/* Painel */
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.2);z-index:90}
+.overlay.on{display:block}
+.side-panel{position:fixed;top:0;right:0;width:440px;height:100vh;background:var(--surface);border-left:1px solid var(--border);z-index:100;display:flex;flex-direction:column;transform:translateX(100%);transition:transform 0.25s}
+.side-panel.on{transform:translateX(0)}
+.panel-head{padding:18px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.panel-head h2{font-family:'Syne',sans-serif;font-size:15px;font-weight:600}
+.panel-body{flex:1;overflow-y:auto;padding:20px 22px}
+.close-btn{background:none;border:none;cursor:pointer;color:var(--text3);font-size:22px;line-height:1}
+
+/* Form */
+.form-group{margin-bottom:14px}
+.form-label{display:block;font-size:11px;font-weight:600;color:var(--text2);margin-bottom:5px;font-family:'Syne',sans-serif;letter-spacing:0.3px}
+.form-input{width:100%;padding:9px 12px;border:1px solid var(--border2);border-radius:7px;font-size:13px;outline:none;font-family:'DM Sans',sans-serif;background:var(--surface);color:var(--text);transition:border 0.15s}
+.form-input:focus{border-color:var(--blue-mid)}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+
+/* Histórico */
+.hist-item{display:flex;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)}
+.hist-item:last-child{border-bottom:none}
+.hist-dot{width:8px;height:8px;border-radius:50%;margin-top:4px;flex-shrink:0}
+.hist-status{font-size:13px;font-weight:500}
+.hist-detail{font-size:12px;color:var(--text2);margin-top:2px}
+.hist-date{font-size:11px;color:var(--text3);margin-top:2px}
+
+/* Misc */
+.empty{text-align:center;padding:48px;color:var(--text3)}
+.empty-icon{font-size:32px;margin-bottom:10px}
+.notif{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(90px);background:var(--text);color:#fff;padding:11px 22px;border-radius:8px;font-size:13px;font-weight:500;transition:transform 0.3s;z-index:200;pointer-events:none}
+.notif.show{transform:translateX(-50%) translateY(0)}
+.spinner{display:inline-block;width:18px;height:18px;border:2px solid rgba(0,0,0,0.1);border-top-color:var(--text);border-radius:50%;animation:spin 0.7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.prog-bar{height:4px;background:var(--border);border-radius:2px;overflow:hidden}
+.prog-fill{height:100%;background:var(--green-mid);border-radius:2px}
+.sec-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.sec-title{font-family:'Syne',sans-serif;font-size:14px;font-weight:600}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div class="login-wrap" id="login-screen">
+  <div class="login-card">
+    <div class="login-logo">IR Monitor</div>
+    <div class="login-sub">Connex Soluções Contábeis</div>
+    <div class="login-err" id="login-err">Usuário ou senha incorretos</div>
+    <div class="form-group" style="text-align:left">
+      <label class="form-label">Usuário</label>
+      <input class="form-input" id="login-user" placeholder="admin" value="admin"/>
+    </div>
+    <div class="form-group" style="text-align:left">
+      <label class="form-label">Senha</label>
+      <input class="form-input" id="login-pass" type="password" placeholder="••••••" value="admin123"/>
+    </div>
+    <button class="btn btn-primary" style="width:100%;padding:12px;font-size:14px;margin-top:4px" onclick="fazerLogin()">Entrar</button>
+    <p style="font-size:11px;color:var(--text3);margin-top:16px">Admin padrão: admin / admin123</p>
+  </div>
+</div>
+
+<!-- APP -->
+<div class="app" id="app-screen" style="display:none">
+  <nav class="sidebar">
+    <div class="sidebar-logo">
+      <h1>IR Monitor</h1>
+      <small>Connex Soluções Contábeis</small>
+    </div>
+    <div class="nav-group">PRINCIPAL</div>
+    <div class="nav-item active" onclick="navTo(this,'dashboard')">
+      <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="1" width="6" height="6" rx="1"/><rect x="9" y="1" width="6" height="6" rx="1"/><rect x="1" y="9" width="6" height="6" rx="1"/><rect x="9" y="9" width="6" height="6" rx="1"/></svg>
+      Painel
+    </div>
+    <div class="nav-item" onclick="navTo(this,'clientes')">
+      <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="5" r="3"/><path d="M2 14c0-3 2.7-5 6-5s6 2 6 5"/></svg>
+      Clientes
+    </div>
+    <div class="nav-group">ANÁLISE</div>
+    <div class="nav-item" id="nav-financeiro" onclick="navTo(this,'financeiro')">
+      <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="3" width="14" height="10" rx="1.5"/><line x1="1" y1="6" x2="15" y2="6"/><line x1="4" y1="10" x2="7" y2="10"/></svg>
+      Financeiro
+    </div>
+    <div class="nav-item" onclick="navTo(this,'relatorios')">
+      <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="1" width="12" height="14" rx="1"/><line x1="5" y1="5" x2="11" y2="5"/><line x1="5" y1="8" x2="11" y2="8"/><line x1="5" y1="11" x2="9" y2="11"/></svg>
+      Relatórios
+    </div>
+    <div class="nav-item" onclick="navTo(this,'lembretes')">
+      <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 1a5 5 0 0 1 5 5c0 3 1 4 1 4H2s1-1 1-4a5 5 0 0 1 5-5z"/><path d="M6.5 13a1.5 1.5 0 0 0 3 0"/></svg>
+      Lembretes
+    </div>
+    <div class="nav-group">CONFIG</div>
+    <div class="nav-item" onclick="navTo(this,'configuracoes')">
+      <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="2.5"/><path d="M8 1v2M8 13v2M1 8h2M13 8h2M3.05 3.05l1.41 1.41M11.54 11.54l1.41 1.41M3.05 12.95l1.41-1.41M11.54 4.46l1.41-1.41"/></svg>
+      Configurações
+    </div>
+    <div class="nav-item" id="nav-usuarios" onclick="navTo(this,'usuarios')">
+      <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="6" cy="5" r="2.5"/><circle cx="11" cy="5" r="2"/><path d="M1 14c0-2.5 2-4 5-4s5 1.5 5 4"/><path d="M11 7c1.5 0 3 1 3 3"/></svg>
+      Usuários
+    </div>
+    <div class="sidebar-footer">
+      <p id="user-info" onclick="fazerLogout()">👤 Sair</p>
+      <p id="api-st" style="margin-top:4px">Backend: localhost:5000</p>
+    </div>
+  </nav>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="topbar-left">
+        <div class="topbar-title" id="page-title">Painel</div>
+        <div id="prazo-badge"></div>
+      </div>
+      <div class="topbar-right">
+        <button class="btn btn-outline btn-sm" onclick="exportarCSV()">↓ Exportar CSV</button>
+        <button class="btn btn-primary btn-sm" onclick="abrirNovoCliente()">+ Novo cliente</button>
+      </div>
+    </div>
+    <div class="content" id="content">
+      <div style="text-align:center;padding:60px"><div class="spinner"></div></div>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="overlay" onclick="fecharPainel()"></div>
+<div class="side-panel" id="side-panel">
+  <div class="panel-head">
+    <h2 id="panel-title"></h2>
+    <button class="close-btn" onclick="fecharPainel()">×</button>
+  </div>
+  <div class="panel-body" id="panel-body"></div>
+</div>
+<div class="notif" id="notif"></div>
+
+<script>
+const API = "http://localhost:5000/api";
+let clientes = [], stats = {}, busca = "", filtroAtivo = "Todos";
+let currentUser = null; // {nome, perfil}
+
+// ─── AUTENTICAÇÃO ─────────────────────────────────────────────────────────────
+const USERS = [
+  {user:"admin",    pass:"admin123", nome:"Administrador", perfil:"admin"},
+  {user:"editor",   pass:"editor123", nome:"Editor",       perfil:"editor"},
+  {user:"viewer",   pass:"viewer123", nome:"Visualizador", perfil:"visualizador"},
+];
+
+function fazerLogin() {
+  const u = document.getElementById("login-user").value.trim();
+  const p = document.getElementById("login-pass").value;
+  const found = USERS.find(x => x.user === u && x.pass === p);
+  // Também verificar usuários cadastrados no backend
+  if (found) {
+    currentUser = found;
+    localStorage.setItem("ir_user", JSON.stringify(found));
+    mostrarApp();
+  } else {
+    document.getElementById("login-err").style.display = "block";
+  }
+}
+
+document.getElementById("login-pass").addEventListener("keydown", e => {
+  if (e.key === "Enter") fazerLogin();
+});
+
+function fazerLogout() {
+  localStorage.removeItem("ir_user");
+  currentUser = null;
+  document.getElementById("app-screen").style.display = "none";
+  document.getElementById("login-screen").style.display = "flex";
+}
+
+function mostrarApp() {
+  document.getElementById("login-screen").style.display = "none";
+  document.getElementById("app-screen").style.display = "flex";
+  document.getElementById("user-info").textContent = "👤 " + currentUser.nome + " — Sair";
+  
+  // Esconder financeiro total para editor
+  if (currentUser.perfil === "editor") {
+    const nf = document.getElementById("nav-financeiro");
+    if (nf) nf.style.display = "none";
+  }
+  // Esconder usuários para não-admin
+  if (currentUser.perfil !== "admin") {
+    const nu = document.getElementById("nav-usuarios");
+    if (nu) nu.style.display = "none";
+  }
+
+  iniciar();
+}
+
+// Verificar sessão salva
+window.addEventListener("load", () => {
+  const saved = localStorage.getItem("ir_user");
+  if (saved) {
+    try { currentUser = JSON.parse(saved); mostrarApp(); }
+    catch(e) { localStorage.removeItem("ir_user"); }
+  }
+});
+
+// ─── API ──────────────────────────────────────────────────────────────────────
+async function api(path, opts = {}) {
+  try {
+    const r = await fetch(API + path, {
+      method: opts.method || "GET",
+      headers: {"Content-Type":"application/json"},
+      body: opts.body ? JSON.stringify(opts.body) : undefined,
+    });
+    if (!r.ok) return null;
+    return await r.json();
+  } catch(e) { return null; }
+}
+
+async function carregarDados() {
+  const [c, s] = await Promise.all([api("/clientes"), api("/stats")]);
+  if (c) clientes = c;
+  if (s) stats = s;
+  const ok = !!c;
+  document.getElementById("api-st").textContent = ok ? "✓ conectado" : "× offline";
+  document.getElementById("api-st").style.color = ok ? "#97C459" : "#E24B4A";
+}
+
+// ─── NAVEGAÇÃO ────────────────────────────────────────────────────────────────
+const TITLES = {dashboard:"Painel",clientes:"Clientes",financeiro:"Financeiro",relatorios:"Relatórios",lembretes:"Lembretes",usuarios:"Usuários",configuracoes:"Configurações"};
+
+async function navTo(el, view) {
+  document.querySelectorAll(".nav-item").forEach(n => n.classList.remove("active"));
+  if (el) el.classList.add("active");
+  document.getElementById("page-title").textContent = TITLES[view] || view;
+  await carregarDados();
+  const c = document.getElementById("content");
+  if (view === "dashboard") renderDashboard(c);
+  else if (view === "clientes") renderClientes(c);
+  else if (view === "financeiro") renderFinanceiro(c);
+  else if (view === "relatorios") renderRelatorios(c);
+  else if (view === "lembretes") renderLembretes(c);
+  else if (view === "usuarios") renderUsuarios(c);
+  else if (view === "configuracoes") renderConfiguracoes(c);
+}
+
+async function iniciar() {
+  await carregarDados();
+  // Prazo
+  const pb = document.getElementById("prazo-badge");
+  const diff = Math.ceil((new Date("2026-05-29") - new Date()) / 864e5);
+  if (diff > 0) {
+    const cor = diff<=7?"#A32D2D":diff<=30?"#854F0B":"#185FA5";
+    const bg  = diff<=7?"#FCEBEB":diff<=30?"#FAEEDA":"#E6F1FB";
+    const bd  = diff<=7?"#F7C1C1":diff<=30?"#FAC775":"#B5D4F4";
+    pb.style.cssText = "background:"+bg+";border:1px solid "+bd+";color:"+cor+";padding:5px 12px;border-radius:7px;font-size:12px;font-weight:600;font-family:Syne,sans-serif";
+    pb.innerHTML = "📅 Prazo IRPF 2026: <strong>" + diff + " dias</strong>";
+  }
+  renderDashboard(document.getElementById("content"));
+}
+
+// ─── BADGE ────────────────────────────────────────────────────────────────────
+function badge(s) {
+  const m = {"Restituição":"b-green","IR a pagar":"b-blue","Transmitida":"b-blue","Concluída":"b-blue","Malha fina":"b-red","Falta documentos":"b-red","Aguardando envio":"b-amber","Em preenchimento":"b-amber","Aguardando contato":"b-gray","Isento":"b-gray","Não obrigado":"b-gray"};
+  return '<span class="badge '+(m[s]||"b-gray")+'"><span class="badge-dot"></span>'+s+'</span>';
+}
+function dotColor(s) {
+  const m = {"Restituição":"#639922","Transmitida":"#378ADD","IR a pagar":"#378ADD","Concluída":"#378ADD","Malha fina":"#E24B4A","Falta documentos":"#E24B4A","Aguardando envio":"#BA7517","Em preenchimento":"#BA7517","Aguardando contato":"#888780","Isento":"#888780","Não obrigado":"#888780"};
+  return m[s] || "#888780";
+}
+
+// ─── DASHBOARD ────────────────────────────────────────────────────────────────
+function renderDashboard(c) {
+  const ps = stats.por_status || {};
+  const total = stats.total || 0;
+  const transmit = (ps["Transmitida"]||0)+(ps["Restituição"]||0)+(ps["IR a pagar"]||0)+(ps["Concluída"]||0);
+  const aguard   = (ps["Aguardando envio"]||0)+(ps["Aguardando contato"]||0)+(ps["Em preenchimento"]||0)+(ps["Falta documentos"]||0);
+  const isentos  = (ps["Isento"]||0)+(ps["Não obrigado"]||0);
+  const malha    = ps["Malha fina"]||0;
+  const restit   = ps["Restituição"]||0;
+  const irPagar  = ps["IR a pagar"]||0;
+  const pct      = total ? Math.round((transmit/total)*100) : 0;
+  const somaR    = stats.soma_restituicoes || 0;
+  const somaIR   = stats.soma_ir_pagar || 0;
+  const malhaClientes = clientes.filter(cl => cl.status === "Malha fina");
+  const recentes = [...clientes].sort((a,b)=>(b.ultima_consulta||"").localeCompare(a.ultima_consulta||"")).slice(0,6);
+
+  // Gráfico rosca
+  const gData = [
+    {l:"Transmitida",v:ps["Transmitida"]||0,c:"#378ADD"},
+    {l:"Restituição",v:restit,c:"#639922"},
+    {l:"IR a pagar",v:irPagar,c:"#185FA5"},
+    {l:"Aguardando",v:aguard,c:"#BA7517"},
+    {l:"Malha fina",v:malha,c:"#E24B4A"},
+    {l:"Isento",v:isentos,c:"#888780"},
+  ].filter(d=>d.v>0);
+  let paths="",ang=-Math.PI/2;
+  const totalV = gData.reduce((a,b)=>a+b.v,0)||1;
+  gData.forEach(d=>{
+    const sl=(d.v/totalV)*2*Math.PI,cx=100,cy=100,r=78,ri=50;
+    const x1=cx+r*Math.cos(ang),y1=cy+r*Math.sin(ang);
+    const x2=cx+r*Math.cos(ang+sl),y2=cy+r*Math.sin(ang+sl);
+    const xi1=cx+ri*Math.cos(ang),yi1=cy+ri*Math.sin(ang);
+    const xi2=cx+ri*Math.cos(ang+sl),yi2=cy+ri*Math.sin(ang+sl);
+    const lg=sl>Math.PI?1:0;
+    paths+=`<path d="M${x1.toFixed(1)},${y1.toFixed(1)} A${r},${r} 0 ${lg},1 ${x2.toFixed(1)},${y2.toFixed(1)} L${xi2.toFixed(1)},${yi2.toFixed(1)} A${ri},${ri} 0 ${lg},0 ${xi1.toFixed(1)},${yi1.toFixed(1)} Z" fill="${d.c}" stroke="#fff" stroke-width="2"/>`;
+    ang+=sl;
+  });
+
+  c.innerHTML = `
+    ${malhaClientes.length ? `
+    <div style="background:#FFF0F0;border:2px solid #E24B4A;border-radius:14px;padding:18px 20px;margin-bottom:20px">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
+        <div style="width:40px;height:40px;background:#E24B4A;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">⚠️</div>
+        <div style="flex:1"><div style="font-family:Syne,sans-serif;font-weight:700;color:#A32D2D;font-size:14px">Atenção — Malha Fina</div><div style="font-size:12px;color:#E24B4A;margin-top:2px">${malhaClientes.length} cliente${malhaClientes.length>1?"s":""} retido${malhaClientes.length>1?"s":""} — resolva o quanto antes!</div></div>
+        <div style="background:#E24B4A;color:#fff;font-size:20px;font-weight:700;width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center">${malhaClientes.length}</div>
+      </div>
+      ${malhaClientes.map(cl=>`<div onclick="abrirCliente(${cl.id})" style="background:rgba(255,255,255,0.8);border:1px solid #F7C1C1;border-radius:9px;padding:11px 14px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;margin-bottom:6px"><div style="display:flex;align-items:center;gap:10px"><div style="width:32px;height:32px;border-radius:50%;background:#F7C1C1;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#A32D2D">${cl.nome.split(" ").slice(0,2).map(n=>n[0]).join("")}</div><div><div style="font-size:13px;font-weight:600">${cl.nome}</div><div style="font-size:11px;color:#E24B4A;font-family:monospace">${cl.cpf}</div></div></div><span style="color:#E24B4A;font-size:18px">›</span></div>`).join("")}
+      <button onclick="filtroAtivo='Malha fina';navTo(document.querySelector('.nav-item:nth-child(5)'),'clientes')" style="background:#E24B4A;color:#fff;border:none;border-radius:8px;padding:9px;width:100%;margin-top:8px;font-size:13px;font-weight:600;cursor:pointer">Ver todos em malha fina →</button>
+    </div>` : ""}
+
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:12px">
+      <div class="stat-card" style="border-left:3px solid #888">
+        <div class="stat-label">Total clientes</div><div class="stat-value">${total}</div>
+        <div style="margin-top:8px"><div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text3);margin-bottom:4px"><span>Transmitidas</span><span>${pct}%</span></div>
+        <div class="prog-bar"><div class="prog-fill" style="width:${pct}%;background:var(--blue-mid)"></div></div></div>
+      </div>
+      <div class="stat-card" style="border-left:3px solid var(--blue-mid)"><div class="stat-label">Transmitidas</div><div class="stat-value" style="color:var(--blue)">${transmit}</div><div class="stat-sub">📤 Enviadas à Receita</div></div>
+      <div class="stat-card" style="border-left:3px solid var(--amber-mid)"><div class="stat-label">Aguardando</div><div class="stat-value" style="color:var(--amber)">${aguard}</div><div class="stat-sub">⏳ A enviar / contatar</div></div>
+      <div class="stat-card" style="border-left:3px solid var(--text3)"><div class="stat-label">Isentos</div><div class="stat-value" style="color:var(--gray)">${isentos}</div><div class="stat-sub">🔖 Não obrigados</div></div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px">
+      <div class="stat-card" style="background:var(--green-bg);border:1px solid #C0DD97;border-left:3px solid var(--green-mid)">
+        <div class="stat-label" style="color:var(--green)">Restituição</div><div class="stat-value" style="color:var(--green)">${restit}</div>
+        ${somaR>0?`<div style="font-size:12px;font-weight:600;color:var(--green);margin-top:6px;padding-top:6px;border-top:1px solid #C0DD97">Total: R$ ${somaR.toLocaleString("pt-BR",{minimumFractionDigits:2})}</div>`:"<div class='stat-sub' style='color:var(--green)'>💰 Aprovadas</div>"}
+      </div>
+      <div class="stat-card" style="background:var(--red-bg);border:1px solid #F7C1C1;border-left:3px solid var(--red-mid)"><div class="stat-label" style="color:var(--red)">Malha fina</div><div class="stat-value" style="color:var(--red)">${malha}</div><div class="stat-sub" style="color:var(--red)">⚠️ Requerem atenção</div></div>
+      <div class="stat-card" style="background:var(--amber-bg);border:1px solid #FAC775;border-left:3px solid var(--amber-mid)"><div class="stat-label" style="color:var(--amber)">Retificar</div><div class="stat-value" style="color:var(--amber)">${ps["Retificar"]||0}</div><div class="stat-sub" style="color:var(--amber)">🔄 Precisam retificação</div></div>
+      <div class="stat-card" style="border-left:3px solid var(--blue-mid)">
+        <div class="stat-label">IR a pagar</div><div class="stat-value" style="color:var(--blue)">${irPagar}</div>
+        ${somaIR>0?`<div style="font-size:12px;font-weight:600;color:var(--blue);margin-top:6px;padding-top:6px;border-top:1px solid var(--border)">Total: R$ ${somaIR.toLocaleString("pt-BR",{minimumFractionDigits:2})}</div>`:"<div class='stat-sub'>📋 Imposto devido</div>"}
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:260px 1fr;gap:16px">
+      <div class="stat-card" style="padding:18px">
+        <div class="stat-label" style="margin-bottom:14px">Distribuição</div>
+        <svg viewBox="0 0 200 200" style="width:160px;height:160px;display:block;margin:0 auto 14px">
+          ${paths}
+          <text x="100" y="96" text-anchor="middle" font-size="24" font-weight="700" font-family="Syne,sans-serif" fill="#1A1916">${total}</text>
+          <text x="100" y="113" text-anchor="middle" font-size="10" fill="#888" font-family="DM Sans,sans-serif">clientes</text>
+        </svg>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          ${gData.map(d=>`<div style="display:flex;align-items:center;justify-content:space-between;font-size:12px"><div style="display:flex;align-items:center;gap:6px"><div style="width:8px;height:8px;border-radius:50%;background:${d.c}"></div><span style="color:var(--text2)">${d.l}</span></div><span style="font-weight:600">${d.v}</span></div>`).join("")}
+        </div>
+      </div>
+      <div class="stat-card" style="padding:18px">
+        <div class="stat-label" style="margin-bottom:14px">Últimas atualizações</div>
+        ${recentes.map(cl=>`<div onclick="abrirCliente(${cl.id})" style="display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--border);cursor:pointer"><div style="display:flex;align-items:center;gap:10px;min-width:0"><div style="width:34px;height:34px;border-radius:50%;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--text2);flex-shrink:0">${cl.nome.split(" ").slice(0,2).map(n=>n[0]).join("")}</div><div style="min-width:0"><div style="font-size:13px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${cl.nome}</div><div style="font-size:11px;color:var(--text3)">${(cl.ultima_consulta||"").split(" ")[0]||"—"}</div></div></div><div style="flex-shrink:0;margin-left:8px">${badge(cl.status||"—")}</div></div>`).join("")}
+        <button class="btn btn-outline btn-sm" style="width:100%;margin-top:12px" onclick="navTo(document.querySelectorAll('.nav-item')[1],'clientes')">Ver todos</button>
+      </div>
+    </div>
+  `;
+}
+
+// ─── CLIENTES ─────────────────────────────────────────────────────────────────
+function renderClientes(c) {
+  const filtrados = clientes.filter(cl => {
+    const ok = filtroAtivo === "Todos" || cl.status === filtroAtivo;
+    const b = busca.toLowerCase();
+    return ok && (!b || cl.nome.toLowerCase().includes(b) || cl.cpf.includes(b));
+  });
+  const statusList = ["Todos","Transmitida","Restituição","IR a pagar","Aguardando envio","Aguardando contato","Falta documentos","Em preenchimento","Malha fina","Concluída","Isento","Não obrigado"];
+  c.innerHTML = `
+    <div class="search-wrap">
+      <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="var(--text3)" stroke-width="1.5"><circle cx="7" cy="7" r="5"/><line x1="10.5" y1="10.5" x2="14" y2="14"/></svg>
+      <input placeholder="Buscar nome ou CPF..." id="si" value="${busca}" oninput="busca=this.value;renderClientes(document.getElementById('content'))"/>
+    </div>
+    <div class="filters">
+      ${statusList.map(f=>`<div class="pill ${filtroAtivo===f?"on":""}" onclick="filtroAtivo='${f}';renderClientes(document.getElementById('content'))">${f}${f!=="Todos"&&(stats.por_status||{})[f]?` <b>${stats.por_status[f]}</b>`:""}</div>`).join("")}
+    </div>
+    ${filtrados.length===0?`<div class="empty"><div class="empty-icon">🔍</div><p>Nenhum cliente encontrado</p></div>`:tabelaHtml(filtrados)}
+  `;
+  const si = document.getElementById("si");
+  if (si) { si.focus(); si.setSelectionRange(si.value.length,si.value.length); }
+}
+
+function tabelaHtml(lista) {
+  const canEdit = currentUser && currentUser.perfil !== "visualizador";
+  return `<div class="table-wrap">
+    <div class="t-head" style="grid-template-columns:2.2fr 1.3fr 0.7fr 1.4fr 1.1fr 0.9fr"><span>Cliente</span><span>CPF</span><span>Ano</span><span>Status</span><span>Atualizado</span><span>Ações</span></div>
+    ${lista.map(cl=>`<div class="t-row" style="grid-template-columns:2.2fr 1.3fr 0.7fr 1.4fr 1.1fr 0.9fr;cursor:pointer" onclick="abrirCliente(${cl.id})">
+      <div><div class="client-name">${cl.nome}</div></div>
+      <div style="font-family:monospace;font-size:12px;color:var(--text2)">${cl.cpf}</div>
+      <div style="font-size:13px">${cl.ano}</div>
+      <div>${badge(cl.status||"Transmitida")}</div>
+      <div style="font-size:12px;color:var(--text3)">${(cl.ultima_consulta||"").split(" ")[0]||"—"}</div>
+      <div style="display:flex;gap:5px" onclick="event.stopPropagation()">
+        <button class="btn btn-outline btn-sm" onclick="abrirCliente(${cl.id})">Ver</button>
+        ${canEdit?`<button class="btn btn-outline btn-sm" onclick="abrirEditar(${cl.id})">Editar</button>`:""}
+      </div>
+    </div>`).join("")}
+  </div>`;
+}
+
+// ─── DETALHE CLIENTE ──────────────────────────────────────────────────────────
+async function abrirCliente(id) {
+  const data = await api("/clientes/" + id);
+  if (!data) { notify("Erro ao carregar"); return; }
+  const cl = data.cliente, d = data.declaracao, h = data.historico || [];
+  const canEdit = currentUser && currentUser.perfil !== "visualizador";
+  document.getElementById("panel-title").textContent = cl.nome;
+  let extra = "";
+  if (d) {
+    if (d.status === "Restituição" && d.valor_restit) extra = `<div class="stat-card" style="margin-bottom:14px;background:var(--green-bg);border-color:#C0DD97"><div class="stat-label" style="color:var(--green)">Valor restituição</div><div style="font-size:20px;font-weight:700;color:var(--green)">${d.valor_restit}</div>${d.lote?`<div style="font-size:11px;color:var(--green)">Lote ${d.lote}</div>`:""}</div>`;
+    if (d.status === "IR a pagar") extra = `<div class="stat-card" style="margin-bottom:14px;background:var(--blue-bg);border-color:#B5D4F4"><div class="stat-label" style="color:var(--blue)">IR a pagar</div>${d.valor_total_ir?`<div style="font-size:20px;font-weight:700;color:var(--blue)">${d.valor_total_ir}</div>`:""} ${d.quotas?`<div style="font-size:12px;color:var(--blue)">${d.quotas}x de ${d.valor_quota||""}</div>`:""}</div>`;
+    if (d.status === "Malha fina") extra = `<div class="stat-card" style="margin-bottom:14px;background:var(--red-bg);border-color:#F7C1C1"><div class="stat-label" style="color:var(--red)">Pendência</div><div style="font-size:13px;color:var(--red)">${d.detalhe||"Verificar no e-CAC"}</div></div>`;
+  }
+  const pb = document.getElementById("panel-body");
+  pb.innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
+      <div><div class="stat-label">CPF</div><div style="font-family:monospace;font-size:13px">${cl.cpf}</div></div>
+      <div><div class="stat-label">Ano</div><div style="font-size:13px;font-weight:600">${cl.ano}</div></div>
+    </div>
+    ${currentUser.perfil==="admin"?`<div class="form-group"><div class="stat-label">Senha Gov.br</div><div style="display:flex;gap:7px"><input type="password" id="spw" value="${(cl.senha_gov||"").replace(/"/g,"")}" style="flex:1;padding:8px 12px;border:1px solid var(--border2);border-radius:7px;font-size:13px;font-family:monospace;background:var(--surface2)" readonly/><button class="btn btn-outline btn-sm" id="spw-btn" onclick="document.getElementById('spw').type=document.getElementById('spw').type==='password'?'text':'password'">👁</button><button class="btn btn-outline btn-sm" onclick="editarSenha(${id})">✏️</button></div></div>`:""}
+    <div class="stat-card" style="margin-bottom:14px"><div class="stat-label">Status</div><div style="margin-top:4px">${badge(d&&d.status||"—")}</div></div>
+    ${extra}
+    <div style="font-family:Syne,sans-serif;font-size:13px;font-weight:600;margin-bottom:10px">Histórico</div>
+    <div>${h.length===0?`<div style="text-align:center;color:var(--text3);padding:16px;font-size:13px">Sem histórico</div>`:h.map(hi=>`<div class="hist-item"><div class="hist-dot" style="background:${dotColor(hi.status)}"></div><div><div class="hist-status">${hi.status}</div>${hi.detalhe?`<div class="hist-detail">${hi.detalhe}</div>`:""}<div class="hist-date">${(hi.data||"").split(".")[0]||""}</div></div></div>`).join("")}</div>
+    <div style="display:flex;gap:7px;margin-top:18px;flex-wrap:wrap">
+      ${canEdit?`<button class="btn btn-outline" style="flex:1" onclick="abrirEditar(${id})">✏️ Editar</button>`:""}
+      <button class="btn btn-outline" style="flex:1" onclick="abrirWhatsApp(${id})">💬 WhatsApp</button>
+      <button class="btn btn-outline" style="flex:1" onclick="abrirAnotacoes(${id})">📝 Notas</button>
+    </div>
+    <div style="margin-top:7px"><button class="btn btn-green" style="width:100%" onclick="copiarLink(${id})">🔗 Link do cliente</button></div>
+  `;
+  abrirPainel();
+}
+
+// ─── EDITAR CLIENTE ───────────────────────────────────────────────────────────
+async function abrirEditar(id) {
+  window._editClienteId = id;
+  const cl = clientes.find(c => c.id === id);
+  if (!cl) return;
+  document.getElementById("panel-title").textContent = "Editar — " + cl.nome.split(" ")[0];
+  const statusOpts = ["Transmitida","Aguardando envio","Aguardando contato","Em preenchimento","Falta documentos","Restituição","IR a pagar","Concluída","Malha fina","Isento","Não obrigado"];
+  const formaOpts = ["","Pix","Dinheiro","Cartao Credito","Cartao Debito","Boleto","Transferencia","A Combinar","Nao se Aplica"];
+  const pgtoOpts = ["","Pago","Aguardando Pgto","Parcelado","Nao se Aplica"];
+  const isAdmin = currentUser && currentUser.perfil === "admin";
+  const isEditor = currentUser && currentUser.perfil === "editor";
+
+  document.getElementById("panel-body").innerHTML = `
+    <div style="background:var(--surface2);border-radius:8px;padding:10px 14px;margin-bottom:16px">
+      <div style="font-weight:500;font-size:13px">${cl.nome}</div>
+      <div style="font-size:11px;color:var(--text3);font-family:monospace">${cl.cpf}</div>
+    </div>
+    <div class="form-group"><label class="form-label">Status</label>
+      <select class="form-input" id="e-status" onchange="toggleCampos(this.value)">
+        ${statusOpts.map(s=>`<option ${(cl.status||"")===s?"selected":""}>${s}</option>`).join("")}
+      </select>
+    </div>
+    <div class="form-group"><label class="form-label">Detalhe / observação</label>
+      <input class="form-input" id="e-detalhe" value="${((cl.detalhe||"").substring(0,120)).replace(/"/g,"&quot;")}"/>
+    </div>
+    <div id="campos-malha" style="display:${cl.status==="Malha fina"?"block":"none"}">
+      <div class="form-group"><label class="form-label">Motivo da malha fina</label>
+        <select class="form-input" id="e-motivo-malha">
+          <option value="">— Selecione o motivo —</option>
+          <option value="Omissão de rendimentos" ${(cl.motivo_malha||"")==="Omissão de rendimentos"?"selected":""}>Omissão de rendimentos</option>
+          <option value="Dedução incompatível" ${(cl.motivo_malha||"")==="Dedução incompatível"?"selected":""}>Dedução incompatível</option>
+          <option value="Renda incompatível com patrimônio" ${(cl.motivo_malha||"")==="Renda incompatível com patrimônio"?"selected":""}>Renda incompatível com patrimônio</option>
+          <option value="Divergência com informações de terceiros" ${(cl.motivo_malha||"")==="Divergência com informações de terceiros"?"selected":""}>Divergência com informações de terceiros</option>
+          <option value="Despesas médicas incompatíveis" ${(cl.motivo_malha||"")==="Despesas médicas incompatíveis"?"selected":""}>Despesas médicas incompatíveis</option>
+          <option value="Erro no preenchimento" ${(cl.motivo_malha||"")==="Erro no preenchimento"?"selected":""}>Erro no preenchimento</option>
+          <option value="Outro" ${(cl.motivo_malha||"")==="Outro"?"selected":""}>Outro</option>
+        </select>
+      </div>
+      <div style="border-top:1px solid var(--border);padding-top:14px;margin-top:4px">
+        <div class="stat-label" style="margin-bottom:10px">📎 Documentos / Print da notificação</div>
+        <div id="lista-anexos-edit" style="margin-bottom:10px"></div>
+        <label style="display:flex;align-items:center;gap:8px;padding:10px 14px;border:1.5px dashed var(--border2);border-radius:8px;cursor:pointer;font-size:13px;color:var(--text2)">
+          <span>📎 Clique para anexar documento ou print</span>
+          <input type="file" id="anexo-file" style="display:none" accept="image/*,.pdf" onchange="anexarArquivo(${id})"/>
+        </label>
+      </div>
+    </div>
+    <div id="campos-restit" style="display:${cl.status==="Restituição"?"block":"none"}">
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Lote</label><input class="form-input" id="e-lote" type="number" value="${cl.lote||""}"/></div>
+        <div class="form-group"><label class="form-label">Valor restituição</label><input class="form-input" id="e-valor-restit" value="${cl.valor_restit||""}"/></div>
+      </div>
+    </div>
+    <div id="campos-ir" style="display:${cl.status==="IR a pagar"?"block":"none"}">
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Nº quotas</label><input class="form-input" id="e-quotas" type="number" value="${cl.quotas||""}"/></div>
+        <div class="form-group"><label class="form-label">Valor/quota</label><input class="form-input" id="e-valor-quota" value="${cl.valor_quota||""}"/></div>
+      </div>
+      <div class="form-group"><label class="form-label">Total a pagar</label><input class="form-input" id="e-total-ir" value="${cl.valor_total_ir||""}"/></div>
+    </div>
+    ${isAdmin||isEditor?`
+    <div style="border-top:1px solid var(--border);margin:14px 0;padding-top:14px">
+      <div class="stat-label" style="margin-bottom:12px">Financeiro</div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Honorário (R$)</label><input class="form-input" id="e-honor" type="number" value="${cl.honorario||""}"/></div>
+        <div class="form-group"><label class="form-label">Forma de pagamento</label>
+          <select class="form-input" id="e-forma">${formaOpts.map(f=>`<option value="${f}" ${(cl.forma_pgto||"")===f?"selected":""}>${f||"— Selecione —"}</option>`).join("")}</select>
+        </div>
+      </div>
+      <div class="form-group"><label class="form-label">Situação pagamento</label>
+        <select class="form-input" id="e-pgto">${pgtoOpts.map(s=>`<option value="${s}" ${(cl.situacao_pgto||"")===s?"selected":""}>${s||"— Selecione —"}</option>`).join("")}</select>
+      </div>
+    </div>`:""
+    }
+    <button class="btn btn-primary" style="width:100%;margin-top:4px" onclick="salvarStatus(${id})">Salvar atualização</button>
+  `;
+  abrirPainel();
+}
+
+function toggleCampos(status) {
+  const r = document.getElementById("campos-restit");
+  const i = document.getElementById("campos-ir");
+  const m = document.getElementById("campos-malha");
+  if (r) r.style.display = status === "Restituição" ? "block" : "none";
+  if (i) i.style.display = status === "IR a pagar" ? "block" : "none";
+  if (m) m.style.display = status === "Malha fina" ? "block" : "none";
+  if (status === "Malha fina") carregarAnexosEdit(window._editClienteId);
+}
+
+async function salvarStatus(id) {
+  window._editClienteId = id;
+  const body = {
+    status:         v("e-status"),
+    detalhe:        v("e-detalhe") || "",
+    lote:           v("e-lote") || null,
+    valor_restit:   v("e-valor-restit") || null,
+    quotas:         v("e-quotas") || null,
+    valor_quota:    v("e-valor-quota") || null,
+    valor_total_ir: v("e-total-ir") || null,
+    motivo_malha:   v("e-motivo-malha") || null,
+    honorario:      v("e-honor") ? parseFloat(v("e-honor")) : null,
+    forma_pgto:     v("e-forma") || null,
+    situacao_pgto:  v("e-pgto") || null,
+    origem:         "manual",
+  };
+  const r = await api("/clientes/" + id, {method:"PUT", body});
+  if (r && !r.erro) { notify("Atualizado!"); fecharPainel(); await carregarDados(); renderClientes(document.getElementById("content")); }
+  else notify("Erro ao salvar");
+}
+
+// ─── NOVO CLIENTE ─────────────────────────────────────────────────────────────
+function abrirNovoCliente() {
+  document.getElementById("panel-title").textContent = "Novo cliente";
+  document.getElementById("panel-body").innerHTML = `
+    <div class="form-group"><label class="form-label">Nome completo *</label><input class="form-input" id="f-nome" placeholder="João da Silva"/></div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">CPF *</label><input class="form-input" id="f-cpf" placeholder="000.000.000-00"/></div>
+      <div class="form-group"><label class="form-label">Ano</label><select class="form-input" id="f-ano"><option>2026</option><option>2025</option><option>2024</option><option>2023</option></select></div>
+    </div>
+    <div class="form-group"><label class="form-label">WhatsApp</label><input class="form-input" id="f-wa" placeholder="(62) 99999-9999"/></div>
+    <div class="form-group"><label class="form-label">Senha Gov.br</label><input class="form-input" id="f-senha" type="password" placeholder="Senha"/></div>
+    <div class="form-group"><label class="form-label">Status inicial</label>
+      <select class="form-input" id="f-status">
+        ${["Transmitida","Aguardando envio","Aguardando contato","Em preenchimento","Falta documentos","Restituição","IR a pagar","Concluída","Malha fina","Isento","Não obrigado"].map(s=>`<option>${s}</option>`).join("")}
+      </select>
+    </div>
+    <button class="btn btn-primary" style="width:100%;margin-top:4px" onclick="salvarNovoCliente()">Cadastrar</button>
+  `;
+  abrirPainel();
+}
+
+async function salvarNovoCliente() {
+  const nome = v("f-nome"), cpf = v("f-cpf");
+  if (!nome || !cpf) { notify("Nome e CPF obrigatórios"); return; }
+  const r = await api("/clientes", {method:"POST", body:{nome,cpf,senha_gov:v("f-senha")||"",whatsapp:v("f-wa")||"",ano:parseInt(v("f-ano")||"2026"),status:v("f-status")||"Transmitida"}});
+  if (r && !r.erro) { notify("Cliente cadastrado!"); fecharPainel(); await carregarDados(); renderClientes(document.getElementById("content")); }
+  else notify(r&&r.erro||"Erro ao cadastrar");
+}
+
+// ─── FINANCEIRO ───────────────────────────────────────────────────────────────
+async function renderFinanceiro(c) {
+  c.innerHTML = `<div style="padding:40px;text-align:center"><div class="spinner"></div></div>`;
+  const data = await api("/financeiro");
+  if (!data) { c.innerHTML = `<div class="empty"><p>Erro ao carregar</p></div>`; return; }
+  const s = data.stats || {};
+  const pct = s.total_clientes ? Math.round((s.declaracoes_entregues/s.total_clientes)*100) : 0;
+  const pctR = s.total_lancado ? Math.round((s.total_pago/s.total_lancado)*100) : 0;
+  const isAdmin = currentUser && currentUser.perfil === "admin";
+
+  c.innerHTML = `
+    <div style="max-width:860px">
+      ${isAdmin?`
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px">
+        <div class="stat-card"><div class="stat-label">Total lançado</div><div class="stat-value" style="font-size:19px">R$ ${(s.total_lancado||0).toLocaleString("pt-BR",{minimumFractionDigits:2})}</div><div class="stat-sub">${s.com_honorario||0} declarações</div></div>
+        <div class="stat-card" style="background:var(--green-bg);border-color:#C0DD97"><div class="stat-label" style="color:var(--green)">Total recebido</div><div class="stat-value" style="font-size:19px;color:var(--green)">R$ ${(s.total_pago||0).toLocaleString("pt-BR",{minimumFractionDigits:2})}</div><div class="stat-sub" style="color:var(--green)">${s.qtd_pago||0} pagos</div></div>
+        <div class="stat-card" style="background:var(--amber-bg);border-color:#FAC775"><div class="stat-label" style="color:var(--amber)">A receber</div><div class="stat-value" style="font-size:19px;color:var(--amber)">R$ ${(s.total_pendente||0).toLocaleString("pt-BR",{minimumFractionDigits:2})}</div><div class="stat-sub" style="color:var(--amber)">${s.qtd_pendente||0} pendentes</div></div>
+        <div class="stat-card"><div class="stat-label">Ticket médio</div><div class="stat-value" style="font-size:19px">R$ ${s.qtd_pago?(s.total_pago/s.qtd_pago).toLocaleString("pt-BR",{minimumFractionDigits:2}):"0,00"}</div></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:24px">
+        <div class="stat-card"><div style="display:flex;justify-content:space-between;margin-bottom:8px"><div class="stat-label">Declarações entregues</div><span style="font-size:13px;font-weight:600;color:var(--blue)">${pct}%</span></div><div style="font-size:13px;font-weight:600">${s.declaracoes_entregues||0} entregues / ${s.declaracoes_pendentes||0} pendentes</div><div class="prog-bar" style="margin-top:8px"><div class="prog-fill" style="width:${pct}%;background:var(--blue-mid)"></div></div></div>
+        <div class="stat-card"><div style="display:flex;justify-content:space-between;margin-bottom:8px"><div class="stat-label">Honorários recebidos</div><span style="font-size:13px;font-weight:600;color:var(--green)">${pctR}%</span></div><div style="font-size:13px;font-weight:600">R$ ${(s.total_pago||0).toLocaleString("pt-BR",{minimumFractionDigits:2})} de R$ ${(s.total_lancado||0).toLocaleString("pt-BR",{minimumFractionDigits:2})}</div><div class="prog-bar" style="margin-top:8px"><div class="prog-fill" style="width:${pctR}%"></div></div></div>
+      </div>`:
+      `<div class="stat-card" style="margin-bottom:20px;padding:20px;text-align:center;background:var(--surface2)"><div style="font-size:13px;color:var(--text2)">Você tem acesso de editor — pode atualizar dados de pagamento por cliente.</div></div>`}
+
+      ${(data.pendentes||[]).length?`
+      <div class="sec-head"><div class="sec-title" style="color:var(--amber)">Aguardando pagamento (${data.pendentes.length})</div></div>
+      <div class="table-wrap" style="margin-bottom:24px">
+        <div class="t-head" style="grid-template-columns:2.5fr 1.2fr 1fr 1fr 1fr"><span>Cliente</span><span>CPF</span><span>Valor</span><span>Forma</span><span>Ação</span></div>
+        ${data.pendentes.map(cl=>`<div class="t-row" style="grid-template-columns:2.5fr 1.2fr 1fr 1fr 1fr">
+          <div class="client-name">${cl.nome}</div>
+          <div style="font-family:monospace;font-size:12px;color:var(--text2)">${cl.cpf}</div>
+          <div style="font-weight:600;color:var(--amber)">R$ ${(cl.honorario||0).toLocaleString("pt-BR",{minimumFractionDigits:2})}</div>
+          <div style="font-size:12px">${cl.forma_pgto||"—"}</div>
+          <div><button class="btn btn-green btn-sm" onclick="marcarPago(${cl.id},'${cl.nome.split(" ")[0]}')">✓ Pago</button></div>
+        </div>`).join("")}
+      </div>`:``}
+
+      ${isAdmin&&(data.pagos||[]).length?`
+      <div class="sec-head"><div class="sec-title">Pagos (${data.pagos.length})</div></div>
+      <div class="table-wrap">
+        <div class="t-head" style="grid-template-columns:2.5fr 1.2fr 1fr 1fr 1fr"><span>Cliente</span><span>CPF</span><span>Valor</span><span>Forma</span><span>Status IR</span></div>
+        ${data.pagos.map(cl=>`<div class="t-row" style="grid-template-columns:2.5fr 1.2fr 1fr 1fr 1fr">
+          <div class="client-name">${cl.nome}</div>
+          <div style="font-family:monospace;font-size:12px;color:var(--text2)">${cl.cpf}</div>
+          <div style="font-weight:600;color:var(--green)">R$ ${(cl.honorario||0).toLocaleString("pt-BR",{minimumFractionDigits:2})}</div>
+          <div style="font-size:12px">${cl.forma_pgto||"—"}</div>
+          <div>${badge(cl.status||"—")}</div>
+        </div>`).join("")}
+      </div>`:``}
+    </div>
+  `;
+}
+
+async function marcarPago(id, nome) {
+  if (!confirm("Marcar " + nome + " como PAGO?")) return;
+  const r = await api("/clientes/" + id + "/financeiro", {method:"PUT", body:{situacao_pgto:"Pago"}});
+  if (r && !r.erro) { notify("Pagamento registrado!"); renderFinanceiro(document.getElementById("content")); }
+  else notify("Erro ao salvar");
+}
+
+// ─── RELATÓRIOS ───────────────────────────────────────────────────────────────
+async function renderRelatorios(c) {
+  c.innerHTML = `<div style="padding:40px;text-align:center"><div class="spinner"></div></div>`;
+  const [relData, finData] = await Promise.all([api("/relatorios"), api("/financeiro")]);
+  if (!relData) { c.innerHTML = `<div class="empty"><p>Erro ao carregar</p></div>`; return; }
+  const restits = relData.restituicoes || [];
+  const irPagar = relData.ir_pagar || [];
+  const malha   = relData.malha || [];
+  const ps      = relData.por_status || [];
+  const fin     = finData && finData.stats || {};
+
+  function parseMoeda(v) { return parseFloat(String(v||0).replace(/[R$\s.]/g,"").replace(",",".")) || 0; }
+  const totalRestit = restits.reduce((a,r)=>a+parseMoeda(r.valor_restit),0);
+  const maxRestit   = restits.length ? parseMoeda(restits[0].valor_restit) : 1;
+  const totalIR     = irPagar.reduce((a,r)=>a+parseMoeda(r.valor_total_ir),0);
+  const total       = fin.total_clientes || 0;
+  const entregues   = fin.declaracoes_entregues || 0;
+  const pct         = total ? Math.round((entregues/total)*100) : 0;
+
+  const tabs = [["r","💰 Restituições"],["ir","📋 IR a Pagar"],["m","⚠️ Malha Fina"],["e","📄 Exportar"]];
+
+  c.innerHTML = `
+  <div style="max-width:860px">
+    <div style="display:flex;gap:3px;background:var(--surface2);padding:4px;border-radius:12px;width:fit-content;margin-bottom:24px">
+      ${tabs.map(([id,label],i)=>`<div onclick="aba('${id}')" id="tab-${id}" style="padding:9px 18px;border-radius:9px;font-size:13px;font-weight:600;font-family:Syne,sans-serif;cursor:pointer;transition:all 0.15s;${i===0?"background:var(--surface);color:var(--text);box-shadow:0 1px 3px rgba(0,0,0,0.08)":"color:var(--text2)"}">${label}</div>`).join("")}
+    </div>
+
+    <!-- RESTITUIÇÕES -->
+    <div id="aba-r">
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:24px">
+        <div style="background:linear-gradient(135deg,#EAF3DE,#d4ecb4);border:1px solid #C0DD97;border-radius:14px;padding:20px">
+          <div class="stat-label" style="color:var(--green)">TOTAL RESTITUIÇÕES</div>
+          <div style="font-size:30px;font-weight:700;color:var(--green);font-family:Syne,sans-serif">${restits.length}</div>
+          <div style="font-size:12px;color:var(--green-mid)">clientes aprovados</div>
+        </div>
+        <div style="background:linear-gradient(135deg,#EAF3DE,#d4ecb4);border:1px solid #C0DD97;border-radius:14px;padding:20px">
+          <div class="stat-label" style="color:var(--green)">MONTANTE TOTAL</div>
+          <div style="font-size:22px;font-weight:700;color:var(--green);font-family:Syne,sans-serif">R$ ${totalRestit.toLocaleString("pt-BR",{minimumFractionDigits:2})}</div>
+          <div style="font-size:12px;color:var(--green-mid)">soma de todas restituições</div>
+        </div>
+        <div style="background:linear-gradient(135deg,#EAF3DE,#d4ecb4);border:1px solid #C0DD97;border-radius:14px;padding:20px">
+          <div class="stat-label" style="color:var(--green)">MÉDIA POR CLIENTE</div>
+          <div style="font-size:22px;font-weight:700;color:var(--green);font-family:Syne,sans-serif">R$ ${restits.length?(totalRestit/restits.length).toLocaleString("pt-BR",{minimumFractionDigits:2}):"0,00"}</div>
+          <div style="font-size:12px;color:var(--green-mid)">ticket médio</div>
+        </div>
+      </div>
+      ${restits.length?`
+      <div class="stat-card" style="padding:20px;margin-bottom:20px">
+        <div class="stat-label" style="margin-bottom:16px">Maiores restituições</div>
+        ${restits.slice(0,8).map((r,i)=>{
+          const val = parseMoeda(r.valor_restit);
+          const pctBar = maxRestit ? Math.round((val/maxRestit)*100) : 0;
+          return `<div onclick="abrirCliente(${r.id})" style="cursor:pointer;margin-bottom:12px">
+            <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+              <div style="display:flex;align-items:center;gap:8px"><span style="font-size:11px;font-weight:700;color:var(--text3);min-width:20px">${i+1}º</span><span style="font-size:13px;font-weight:500">${r.nome.split(" ").slice(0,3).join(" ")}</span></div>
+              <span style="font-size:13px;font-weight:700;color:var(--green)">${r.valor_restit||"—"}</span>
+            </div>
+            <div class="prog-bar"><div class="prog-fill" style="width:${pctBar}%;background:var(--green-mid)"></div></div>
+          </div>`;
+        }).join("")}
+      </div>
+      <div class="sec-head"><div class="sec-title">Todas as restituições (${restits.length})</div></div>
+      <div class="table-wrap">
+        <div class="t-head" style="grid-template-columns:0.4fr 2.5fr 1.2fr 0.8fr 1fr"><span>#</span><span>Cliente</span><span>CPF</span><span>Lote</span><span>Valor</span></div>
+        ${restits.map((r,i)=>`<div class="t-row" style="grid-template-columns:0.4fr 2.5fr 1.2fr 0.8fr 1fr;cursor:pointer" onclick="abrirCliente(${r.id})">
+          <div style="font-weight:700;color:var(--text3)">${i+1}</div>
+          <div class="client-name">${r.nome}</div>
+          <div style="font-family:monospace;font-size:11px;color:var(--text2)">${r.cpf}</div>
+          <div style="font-size:13px">${r.lote?"Lote "+r.lote:"—"}</div>
+          <div style="font-weight:700;color:var(--green);font-size:14px">${r.valor_restit||"—"}</div>
+        </div>`).join("")}
+      </div>`:
+      `<div class="empty"><div class="empty-icon">💰</div><p>Nenhuma restituição registrada</p><div style="font-size:12px;color:var(--text3);margin-top:6px">Edite clientes com status Restituição e informe o valor</div></div>`}
+    </div>
+
+    <!-- IR A PAGAR -->
+    <div id="aba-ir" style="display:none">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:24px">
+        <div style="background:linear-gradient(135deg,#E6F1FB,#cce3f7);border:1px solid #B5D4F4;border-radius:14px;padding:20px">
+          <div class="stat-label" style="color:var(--blue)">CLIENTES IR A PAGAR</div>
+          <div style="font-size:30px;font-weight:700;color:var(--blue);font-family:Syne,sans-serif">${irPagar.length}</div>
+          <div style="font-size:12px;color:var(--blue-mid)">declarações com imposto devido</div>
+        </div>
+        <div style="background:linear-gradient(135deg,#E6F1FB,#cce3f7);border:1px solid #B5D4F4;border-radius:14px;padding:20px">
+          <div class="stat-label" style="color:var(--blue)">TOTAL A RECOLHER</div>
+          <div style="font-size:22px;font-weight:700;color:var(--blue);font-family:Syne,sans-serif">${totalIR>0?"R$ "+totalIR.toLocaleString("pt-BR",{minimumFractionDigits:2}):"Valores não informados"}</div>
+          <div style="font-size:12px;color:var(--blue-mid)">soma de todos os impostos</div>
+        </div>
+      </div>
+      ${irPagar.length?`<div class="table-wrap">
+        <div class="t-head" style="grid-template-columns:2.5fr 1.2fr 0.8fr 1fr 1.2fr"><span>Cliente</span><span>CPF</span><span>Quotas</span><span>Valor/Quota</span><span>Total</span></div>
+        ${irPagar.map(r=>`<div class="t-row" style="grid-template-columns:2.5fr 1.2fr 0.8fr 1fr 1.2fr;cursor:pointer" onclick="abrirCliente(${r.id})">
+          <div class="client-name">${r.nome}</div>
+          <div style="font-family:monospace;font-size:11px;color:var(--text2)">${r.cpf}</div>
+          <div style="font-size:13px">${r.quotas?r.quotas+"x":"—"}</div>
+          <div style="font-size:13px">${r.valor_quota||"—"}</div>
+          <div style="font-weight:700;color:var(--blue)">${r.valor_total_ir||"—"}</div>
+        </div>`).join("")}
+      </div>`:`<div class="empty"><div class="empty-icon">📋</div><p>Nenhum IR a pagar registrado</p></div>`}
+    </div>
+
+    <!-- MALHA FINA -->
+    <div id="aba-m" style="display:none">
+      ${malha.length?`
+      <div style="background:#FFF0F0;border:2px solid #E24B4A;border-radius:14px;padding:20px;margin-bottom:20px;display:flex;align-items:center;gap:16px">
+        <div style="font-size:48px;font-weight:700;color:#E24B4A;font-family:Syne,sans-serif">${malha.length}</div>
+        <div><div style="font-weight:700;color:#A32D2D;font-size:15px">cliente${malha.length>1?"s":""} em malha fina</div><div style="font-size:12px;color:#E24B4A;margin-top:4px">Resolva o quanto antes para evitar penalidades</div></div>
+      </div>
+      <div class="table-wrap">
+        <div class="t-head" style="grid-template-columns:2.5fr 1.3fr 2fr 0.8fr"><span>Cliente</span><span>CPF</span><span>Pendência</span><span>Ação</span></div>
+        ${malha.map(r=>`<div class="t-row" style="grid-template-columns:2.5fr 1.3fr 2fr 0.8fr">
+          <div class="client-name">${r.nome}</div>
+          <div style="font-family:monospace;font-size:11px;color:var(--text2)">${r.cpf}</div>
+          <div style="font-size:12px;color:var(--red)">${r.detalhe||"Verificar pendência"}</div>
+          <div><button class="btn btn-outline btn-sm" onclick="abrirCliente(${r.id})">Ver →</button></div>
+        </div>`).join("")}
+      </div>`:`<div class="empty"><div style="font-size:48px;margin-bottom:12px">✅</div><p>Nenhum cliente em malha fina!</p></div>`}
+    </div>
+
+    <!-- EXPORTAR -->
+    <div id="aba-e" style="display:none">
+      <div class="stat-card" style="padding:20px;margin-bottom:20px">
+        <div class="stat-label" style="margin-bottom:14px">📊 Resumo IRPF 2026</div>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px">
+          <div style="text-align:center;padding:14px;background:var(--surface2);border-radius:10px"><div style="font-size:22px;font-weight:700;font-family:Syne,sans-serif">${total}</div><div style="font-size:11px;color:var(--text3);margin-top:4px">Total</div></div>
+          <div style="text-align:center;padding:14px;background:var(--green-bg);border-radius:10px"><div style="font-size:22px;font-weight:700;font-family:Syne,sans-serif;color:var(--green)">${entregues}</div><div style="font-size:11px;color:var(--green);margin-top:4px">Entregues</div></div>
+          <div style="text-align:center;padding:14px;background:var(--amber-bg);border-radius:10px"><div style="font-size:22px;font-weight:700;font-family:Syne,sans-serif;color:var(--amber)">${fin.declaracoes_pendentes||0}</div><div style="font-size:11px;color:var(--amber);margin-top:4px">Pendentes</div></div>
+          <div style="text-align:center;padding:14px;background:var(--blue-bg);border-radius:10px"><div style="font-size:22px;font-weight:700;font-family:Syne,sans-serif;color:var(--blue)">${pct}%</div><div style="font-size:11px;color:var(--blue);margin-top:4px">Progresso</div></div>
+        </div>
+        <div class="prog-bar" style="height:10px"><div class="prog-fill" style="width:${pct}%;background:linear-gradient(90deg,#378ADD,#185FA5)"></div></div>
+      </div>
+
+      <div class="stat-card" style="padding:20px;margin-bottom:20px">
+        <div class="stat-label" style="margin-bottom:6px">📄 Exportar lista de clientes</div>
+        <div style="font-size:12px;color:var(--text2);margin-bottom:16px">Selecione as situações para incluir no relatório</div>
+        <div style="display:flex;flex-wrap:wrap;gap:7px;margin-bottom:18px" id="pdf-pills">
+          ${["Todos","Transmitida","Restituição","IR a pagar","Aguardando envio","Aguardando contato","Falta documentos","Malha fina","Concluída","Isento","Não obrigado"].map((s,i)=>`
+            <label id="pill-${i}" style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;padding:7px 13px;border:1.5px solid ${i===0?"var(--text)":"var(--border)"};border-radius:22px;background:${i===0?"var(--text)":"var(--surface)"};color:${i===0?"#fff":"var(--text2)"};font-weight:500;transition:all 0.15s">
+              <input type="checkbox" value="${s}" ${i===0?"checked":""} style="display:none" onchange="togglePill(this,${i})"/> ${s}
+            </label>`).join("")}
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <button onclick="gerarPDF()" style="padding:13px;background:var(--text);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px">🖨️ Gerar PDF / Imprimir</button>
+          <button onclick="exportarCSV()" style="padding:13px;background:var(--surface);color:var(--text);border:1.5px solid var(--border2);border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px">📊 Exportar Excel (CSV)</button>
+        </div>
+      </div>
+
+      <div style="background:linear-gradient(135deg,#E1F5EE,#d0f0e0);border:1.5px solid #9FE1CB;border-radius:14px;padding:20px">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px">
+          <div style="width:42px;height:42px;background:#25D366;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:22px">💬</div>
+          <div><div style="font-family:Syne,sans-serif;font-size:14px;font-weight:600;color:#0F6E56">WhatsApp em lote</div><div style="font-size:12px;color:#1D9E75;margin-top:2px">Abra o WhatsApp Web para vários clientes de uma vez</div></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
+          <div>
+            <div class="stat-label" style="color:#0F6E56;margin-bottom:6px">SITUAÇÃO</div>
+            <select id="wa-status" onchange="prevWA(this.value)" style="width:100%;padding:10px 12px;border:1.5px solid #9FE1CB;border-radius:8px;font-size:13px;background:#fff">
+              <option value="">— Selecione —</option>
+              ${["Restituição","Transmitida","Malha fina","IR a pagar","Aguardando envio","Aguardando contato"].map(s=>`<option value="${s}">${s}</option>`).join("")}
+            </select>
+          </div>
+          <div id="wa-count" style="display:flex;align-items:flex-end"><div style="background:rgba(255,255,255,0.7);border-radius:8px;padding:10px 14px;font-size:12px;color:#0F6E56;width:100%">Selecione uma situação</div></div>
+        </div>
+        <div id="wa-area" style="display:none;margin-bottom:12px">
+          <div class="stat-label" style="color:#0F6E56;margin-bottom:6px">MENSAGEM (editável)</div>
+          <textarea id="wa-msg" rows="4" style="width:100%;padding:10px 12px;border:1.5px solid #9FE1CB;border-radius:8px;font-size:13px;background:#fff;font-family:DM Sans,sans-serif;resize:vertical"></textarea>
+        </div>
+        <button id="wa-btn" onclick="enviarWA()" style="display:none;width:100%;padding:13px;background:#25D366;color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer">📱 Abrir WhatsApp Web para cada cliente</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function aba(id) {
+  ["r","ir","m","e"].forEach(a=>{
+    const el=document.getElementById("aba-"+a), tab=document.getElementById("tab-"+a);
+    if(el) el.style.display=a===id?"block":"none";
+    if(tab) { tab.style.background=a===id?"var(--surface)":"transparent"; tab.style.color=a===id?"var(--text)":"var(--text2)"; tab.style.boxShadow=a===id?"0 1px 3px rgba(0,0,0,0.08)":"none"; }
+  });
+}
+
+function togglePill(cb, i) {
+  const pill = document.getElementById("pill-"+i);
+  const isTodos = cb.value === "Todos";
+  if (isTodos) {
+    document.querySelectorAll("#pdf-pills input").forEach((inp,j)=>{
+      inp.checked = cb.checked;
+      const p=document.getElementById("pill-"+j);
+      if(p){p.style.background=cb.checked?"var(--text)":"var(--surface)";p.style.color=cb.checked?"#fff":"var(--text2)";p.style.borderColor=cb.checked?"var(--text)":"var(--border)";}
+    });
+  } else {
+    const todos=document.querySelector("#pdf-pills input[value='Todos']");
+    if(todos){todos.checked=false;const p=document.getElementById("pill-0");if(p){p.style.background="var(--surface)";p.style.color="var(--text2)";p.style.borderColor="var(--border)";}}
+    if(pill){pill.style.background=cb.checked?"var(--text)":"var(--surface)";pill.style.color=cb.checked?"#fff":"var(--text2)";pill.style.borderColor=cb.checked?"var(--text)":"var(--border)";}
+  }
+}
+
+async function gerarPDF() {
+  const checks = [...document.querySelectorAll("#pdf-pills input:checked")];
+  const temTodos = checks.some(c=>c.value==="Todos");
+  const status = temTodos ? [] : checks.map(c=>c.value);
+  notify("Gerando relatório...");
+  const resp = await fetch("/api/exportar/pdf",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({status})});
+  const blob = await resp.blob();
+  const url = URL.createObjectURL(blob);
+  window.open(url,"_blank");
+  notify("Use Ctrl+P para salvar como PDF!");
+}
+
+function prevWA(status) {
+  if (!status) return;
+  const msgs = {
+    "Restituição":"Olá! Sua declaração de IR 2026 foi processada e você tem restituição a receber! Qualquer dúvida, estamos à disposição. Atenciosamente, Connex Soluções Contábeis.",
+    "Transmitida":"Olá! Sua declaração de IR 2026 foi transmitida para a Receita Federal e está em processamento. Avisaremos quando houver novidades! Atenciosamente, Connex Soluções Contábeis.",
+    "Malha fina":"Olá! Sua declaração de IR 2026 foi retida em malha fina. Entre em contato conosco o quanto antes. Atenciosamente, Connex Soluções Contábeis.",
+    "IR a pagar":"Olá! Sua declaração de IR 2026 foi processada e há imposto a recolher. Entre em contato para detalhes. Atenciosamente, Connex Soluções Contábeis.",
+    "Aguardando envio":"Olá! Ainda não recebemos seus documentos para o IR 2026. O prazo é 29/05/2026! Por favor, entre em contato. Atenciosamente, Connex Soluções Contábeis.",
+    "Aguardando contato":"Olá! Precisamos conversar sobre sua declaração de IR 2026. Por favor, entre em contato. Atenciosamente, Connex Soluções Contábeis.",
+  };
+  const msg = document.getElementById("wa-msg");
+  if (msg) msg.value = msgs[status] || "";
+  const area = document.getElementById("wa-area");
+  const btn = document.getElementById("wa-btn");
+  const cnt = document.getElementById("wa-count");
+  if (area) area.style.display = "block";
+  if (btn) btn.style.display = "block";
+  const com = clientes.filter(c=>c.status===status&&c.whatsapp).length;
+  const sem = clientes.filter(c=>c.status===status&&!c.whatsapp).length;
+  if (cnt) cnt.innerHTML = `<div style="background:rgba(255,255,255,0.7);border-radius:8px;padding:10px 14px;width:100%"><div style="font-size:13px;font-weight:600;color:#0F6E56">✓ ${com} com WhatsApp</div>${sem>0?`<div style="font-size:12px;color:var(--amber);margin-top:3px">⚠ ${sem} sem número</div>`:""}</div>`;
+}
+
+function enviarWA() {
+  const status = (document.getElementById("wa-status")||{}).value;
+  const msg = (document.getElementById("wa-msg")||{}).value;
+  if (!status || !msg) { notify("Selecione situação e mensagem"); return; }
+  const lista = clientes.filter(c=>c.status===status&&c.whatsapp);
+  if (!lista.length) { notify("Nenhum cliente com WhatsApp nesta situação"); return; }
+  notify("Abrindo " + lista.length + " conversas...");
+  lista.forEach((cl,i)=>{
+    setTimeout(()=>{
+      const num = cl.whatsapp.replace(/\D/g,"");
+      const txt = msg.replace("Olá!","Olá, "+cl.nome.split(" ")[0]+"!");
+      window.open("https://wa.me/55"+num+"?text="+encodeURIComponent(txt),"_blank");
+    },i*1500);
+  });
+}
+
+// ─── LEMBRETES ────────────────────────────────────────────────────────────────
+async function renderLembretes(c) {
+  c.innerHTML = `<div style="padding:40px;text-align:center"><div class="spinner"></div></div>`;
+  const data = await api("/lembretes");
+  if (!data) { c.innerHTML = `<div class="empty"><p>Erro</p></div>`; return; }
+  const lembs = data.lembretes || [], venc = data.vencidos || [];
+  const hoje = new Date().toISOString().split("T")[0];
+  const cores = {prazo:"b-red",cliente:"b-blue",pagamento:"b-amber",geral:"b-gray"};
+  const nomes = {prazo:"Prazo",cliente:"Cliente",pagamento:"Pagamento",geral:"Geral"};
+
+  c.innerHTML = `<div style="max-width:700px">
+    ${venc.length?`<div style="background:#FFF0F0;border:2px solid #E24B4A;border-radius:12px;padding:16px;margin-bottom:20px"><div style="font-family:Syne,sans-serif;font-weight:700;color:#A32D2D;margin-bottom:10px">⚠️ ${venc.length} lembrete${venc.length>1?"s":""} vencido${venc.length>1?"s":""}</div>${venc.map(l=>`<div style="background:rgba(255,255,255,0.8);border-radius:8px;padding:10px 12px;margin-bottom:6px;display:flex;align-items:center;justify-content:space-between"><div><div style="font-size:13px;font-weight:600">${l.titulo}</div>${l.cliente_nome?`<div style="font-size:11px;color:var(--text3)">${l.cliente_nome}</div>`:""}</div><div style="display:flex;gap:8px;align-items:center"><span style="font-size:11px;color:var(--red)">${l.data_alerta}</span><button class="btn btn-sm" style="background:#E24B4A;color:#fff;border:none" onclick="concluirL(${l.id})">Concluir</button></div></div>`).join("")}</div>`:""}
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+      <div class="sec-title">Lembretes ativos (${lembs.length})</div>
+      <button class="btn btn-primary btn-sm" onclick="novoLembrete()">+ Novo lembrete</button>
+    </div>
+    ${lembs.length===0?`<div class="empty"><div class="empty-icon">🔔</div><p>Nenhum lembrete ativo</p></div>`:`<div style="display:flex;flex-direction:column;gap:8px">${lembs.map(l=>{
+      const vencido=l.data_alerta&&l.data_alerta<hoje;
+      const ehHoje=l.data_alerta===hoje;
+      const bg=vencido?"var(--red-bg)":ehHoje?"var(--amber-bg)":"var(--surface)";
+      const bd=vencido?"#F7C1C1":ehHoje?"#FAC775":"var(--border)";
+      return `<div style="background:${bg};border:1px solid ${bd};border-radius:10px;padding:14px 16px;display:flex;align-items:center;gap:12px"><div style="flex:1"><div style="display:flex;align-items:center;gap:8px;margin-bottom:4px"><span class="badge ${cores[l.tipo]||"b-gray"}">${nomes[l.tipo]||l.tipo}</span><span style="font-size:13px;font-weight:600">${l.titulo}</span></div>${l.descricao?`<div style="font-size:12px;color:var(--text2);margin-bottom:4px">${l.descricao}</div>`:""}<div style="display:flex;gap:12px;font-size:11px;color:var(--text3)">${l.cliente_nome?`<span>👤 ${l.cliente_nome}</span>`:""} ${l.data_alerta?`<span>📅 ${l.data_alerta}</span>`:""}</div></div><div style="display:flex;gap:6px"><button class="btn btn-green btn-sm" onclick="concluirL(${l.id})">✓</button><button class="btn btn-outline btn-sm" onclick="deletarL(${l.id})">×</button></div></div>`;
+    }).join("")}</div>`}
+    <div style="margin-top:24px;padding-top:16px;border-top:1px solid var(--border)">
+      <div class="sec-title" style="margin-bottom:10px;color:var(--text2)">Prazos IRPF 2026</div>
+      ${[["2026-04-30","1ª quota IR a pagar","Vencimento da 1ª quota"],["2026-05-29","Prazo final IRPF 2026","Último dia para transmitir sem multa"],["2026-05-31","Quotas IR a pagar — restante","Vencimentos das demais quotas"]].map(([d,t,desc])=>`<div style="background:var(--surface2);border-radius:8px;padding:12px;margin-bottom:6px;display:flex;gap:12px;align-items:center"><div style="font-family:monospace;font-size:12px;color:var(--blue);font-weight:600;flex-shrink:0">${d}</div><div><div style="font-size:13px;font-weight:500">${t}</div><div style="font-size:11px;color:var(--text3)">${desc}</div></div></div>`).join("")}
+    </div>
+  </div>`;
+}
+
+function novoLembrete() {
+  document.getElementById("panel-title").textContent = "Novo lembrete";
+  document.getElementById("panel-body").innerHTML = `
+    <div class="form-group"><label class="form-label">Título *</label><input class="form-input" id="l-tit" placeholder="Ex: Ligar para cliente"/></div>
+    <div class="form-group"><label class="form-label">Tipo</label><select class="form-input" id="l-tipo"><option value="geral">Geral</option><option value="cliente">Cliente</option><option value="prazo">Prazo</option><option value="pagamento">Pagamento</option></select></div>
+    <div class="form-group"><label class="form-label">Data de alerta</label><input class="form-input" id="l-data" type="date"/></div>
+    <div class="form-group"><label class="form-label">Descrição</label><textarea class="form-input" id="l-desc" rows="3" placeholder="Detalhes..."></textarea></div>
+    <button class="btn btn-primary" style="width:100%" onclick="salvarL()">Criar lembrete</button>`;
+  abrirPainel();
+}
+
+async function salvarL() {
+  const tit = v("l-tit");
+  if (!tit) { notify("Digite um título"); return; }
+  const r = await api("/lembretes", {method:"POST",body:{titulo:tit,tipo:v("l-tipo"),data_alerta:v("l-data")||null,descricao:v("l-desc")||""}});
+  if (r) { notify("Lembrete criado!"); fecharPainel(); renderLembretes(document.getElementById("content")); }
+}
+
+async function concluirL(id) {
+  await api("/lembretes/"+id, {method:"PUT",body:{concluido:1}});
+  notify("Concluído!"); renderLembretes(document.getElementById("content"));
+}
+
+async function deletarL(id) {
+  if (!confirm("Remover lembrete?")) return;
+  await api("/lembretes/"+id, {method:"DELETE"});
+  renderLembretes(document.getElementById("content"));
+}
+
+// ─── USUÁRIOS ─────────────────────────────────────────────────────────────────
+async function renderUsuarios(c) {
+  const users = await api("/usuarios") || [];
+  c.innerHTML = `<div style="max-width:640px">
+    <div style="display:flex;justify-content:space-between;margin-bottom:20px">
+      <div style="font-size:13px;color:var(--text2)">Gerencie o acesso ao sistema</div>
+      <button class="btn btn-primary btn-sm" onclick="novoUsuario()">+ Novo usuário</button>
+    </div>
+    <div style="background:var(--amber-bg);border:1px solid #FAC775;border-radius:10px;padding:14px 16px;margin-bottom:20px">
+      <div style="font-weight:600;color:var(--amber);margin-bottom:6px">ℹ️ Usuários padrão do sistema</div>
+      <div style="font-size:12px;color:var(--text2);line-height:1.8">
+        <b>admin</b> / admin123 — Administrador (acesso total)<br>
+        <b>editor</b> / editor123 — Editor (edita dados, não vê totais financeiros)<br>
+        <b>viewer</b> / viewer123 — Visualizador (somente leitura)
+      </div>
+    </div>
+    ${users.length===0?`<div class="empty"><div class="empty-icon">👥</div><p>Nenhum usuário adicional</p></div>`:`
+    <div class="table-wrap">
+      <div class="t-head" style="grid-template-columns:2fr 2fr 1fr 1fr 1fr"><span>Nome</span><span>Email</span><span>Perfil</span><span>Status</span><span>Ação</span></div>
+      ${users.map(u=>`<div class="t-row" style="grid-template-columns:2fr 2fr 1fr 1fr 1fr">
+        <div class="client-name">${u.nome}</div>
+        <div style="font-size:12px;color:var(--text2)">${u.email||"—"}</div>
+        <div><span class="badge ${u.perfil==="admin"?"b-red":u.perfil==="editor"?"b-blue":"b-gray"}">${u.perfil}</span></div>
+        <div><span class="badge ${u.ativo?"b-green":"b-gray"}">${u.ativo?"Ativo":"Inativo"}</span></div>
+        <div><button class="btn btn-outline btn-sm" onclick="toggleUser(${u.id},${u.ativo?0:1})">${u.ativo?"Desativar":"Ativar"}</button></div>
+      </div>`).join("")}
+    </div>`}
+  </div>`;
+}
+
+function novoUsuario() {
+  document.getElementById("panel-title").textContent = "Novo usuário";
+  document.getElementById("panel-body").innerHTML = `
+    <div class="form-group"><label class="form-label">Nome *</label><input class="form-input" id="u-nome" placeholder="Maria Silva"/></div>
+    <div class="form-group"><label class="form-label">Email *</label><input class="form-input" id="u-email" type="email" placeholder="maria@connex.com.br"/></div>
+    <div class="form-group"><label class="form-label">Senha *</label><input class="form-input" id="u-senha" type="password"/></div>
+    <div class="form-group"><label class="form-label">Perfil</label><select class="form-input" id="u-perfil"><option value="visualizador">Visualizador — só leitura</option><option value="editor">Editor — pode editar</option><option value="admin">Administrador — acesso total</option></select></div>
+    <button class="btn btn-primary" style="width:100%;margin-top:4px" onclick="salvarUser()">Cadastrar</button>`;
+  abrirPainel();
+}
+
+async function salvarUser() {
+  const nome=v("u-nome"),email=v("u-email"),senha=v("u-senha");
+  if(!nome||!email||!senha){notify("Preencha todos os campos");return;}
+  const r=await api("/usuarios",{method:"POST",body:{nome,email,senha,perfil:v("u-perfil")}});
+  if(r&&!r.erro){notify("Usuário cadastrado!");fecharPainel();renderUsuarios(document.getElementById("content"));}
+  else notify(r&&r.erro||"Erro ao cadastrar");
+}
+
+async function toggleUser(id,ativo) {
+  await api("/usuarios/"+id,{method:"PUT",body:{ativo}});
+  renderUsuarios(document.getElementById("content"));
+}
+
+// ─── WHATSAPP INDIVIDUAL ──────────────────────────────────────────────────────
+async function abrirWhatsApp(id) {
+  const data = await api("/api/whatsapp/" + id);
+  if (!data || data.erro) { notify("Erro ao gerar mensagem"); return; }
+  const num = (data.whatsapp || "").replace(/\D/g, "");
+  document.getElementById("panel-title").textContent = "💬 WhatsApp";
+  const pb = document.getElementById("panel-body");
+
+  let topHtml = num
+    ? `<div style="background:linear-gradient(135deg,#E1F5EE,#d0f0e0);border:1.5px solid #9FE1CB;border-radius:12px;padding:14px 16px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;gap:12px"><div style="font-weight:600;color:#0F6E56">📱 ${data.whatsapp}</div><button id="wa-open" style="background:#25D366;color:#fff;border:none;border-radius:8px;padding:9px 14px;font-size:13px;font-weight:600;cursor:pointer">Abrir WhatsApp Web ↗</button></div>`
+    : `<div style="background:var(--amber-bg);border:1px solid #FAC775;border-radius:10px;padding:12px 16px;margin-bottom:14px"><div style="font-size:13px;font-weight:600;color:var(--amber)">⚠️ WhatsApp não cadastrado</div><div style="font-size:11px;color:var(--amber-mid);margin-top:2px">Edite o cliente e adicione o número para habilitar envio direto</div></div>`;
+
+  pb.innerHTML = topHtml +
+    `<div class="form-group"><label class="form-label">Mensagem (editável)</label><textarea class="form-input" id="wa-msg-ind" rows="6" style="resize:vertical"></textarea></div>` +
+    `<div style="display:flex;gap:8px;margin-top:6px">` +
+    (num ? `<button id="wa-send" style="flex:2;padding:11px;background:#25D366;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer">📱 Abrir no WhatsApp Web</button>` : "") +
+    `<button id="wa-copy" style="flex:1;padding:11px;background:var(--surface);border:1px solid var(--border2);border-radius:8px;font-size:13px;cursor:pointer">📋 Copiar</button></div>`;
+
+  // Definir texto após criar elemento
+  const ta = document.getElementById("wa-msg-ind");
+  if (ta) ta.value = data.mensagem || "";
+
+  function abrirWA() {
+    const msg = document.getElementById("wa-msg-ind") ? document.getElementById("wa-msg-ind").value : data.mensagem;
+    window.open("https://wa.me/55" + num + "?text=" + encodeURIComponent(msg), "_blank");
+  }
+
+  const openBtn = document.getElementById("wa-open");
+  const sendBtn = document.getElementById("wa-send");
+  const copyBtn = document.getElementById("wa-copy");
+  if (openBtn) openBtn.addEventListener("click", abrirWA);
+  if (sendBtn) sendBtn.addEventListener("click", abrirWA);
+  if (copyBtn) copyBtn.addEventListener("click", function() {
+    const msg = document.getElementById("wa-msg-ind") ? document.getElementById("wa-msg-ind").value : "";
+    navigator.clipboard.writeText(msg).then(() => notify("Copiado!"));
+  });
+
+  abrirPainel();
+}
+
+// ─── ANOTAÇÕES ────────────────────────────────────────────────────────────────
+async function abrirAnotacoes(id) {
+  const [cd, ad] = await Promise.all([api("/clientes/"+id), api("/clientes/"+id+"/anotacoes")]);
+  const cl = cd && cd.cliente;
+  const anots = ad || [];
+  document.getElementById("panel-title").textContent = "📝 Anotações";
+  document.getElementById("panel-body").innerHTML =
+    `<div style="background:var(--surface2);border-radius:8px;padding:10px 14px;margin-bottom:14px"><div style="font-weight:500;font-size:13px">${cl?cl.nome:""}</div><div style="font-size:11px;color:var(--text3);font-family:monospace">${cl?cl.cpf:""}</div></div>` +
+    `<div class="form-group"><label class="form-label">Nova anotação</label><textarea class="form-input" id="anot-txt" rows="3" placeholder="Registre ligações, acordos, documentos..."></textarea></div>` +
+    `<button class="btn btn-primary" style="width:100%;margin-bottom:18px" onclick="salvarAnot(${id})">Salvar</button>` +
+    `<div class="stat-label" style="margin-bottom:10px">Histórico (${anots.length})</div>` +
+    `<div>${anots.length===0?`<div style="text-align:center;color:var(--text3);font-size:13px;padding:16px">Nenhuma anotação</div>`:anots.map(a=>`<div style="background:var(--surface2);border-radius:8px;padding:12px;margin-bottom:8px"><div style="font-size:13px;line-height:1.5;margin-bottom:6px">${a.texto}</div><div style="display:flex;justify-content:space-between;align-items:center"><div style="font-size:11px;color:var(--text3)">${a.autor} · ${(a.criado_em||"").split(" ")[0]}</div><button onclick="delAnot(${a.id},${id})" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:16px">×</button></div></div>`).join("")}</div>`;
+  abrirPainel();
+}
+
+async function salvarAnot(id) {
+  const txt = v("anot-txt");
+  if (!txt) { notify("Digite uma anotação"); return; }
+  const r = await api("/clientes/"+id+"/anotacoes",{method:"POST",body:{texto:txt,autor:"Escritório"}});
+  if (r) { notify("Salvo!"); abrirAnotacoes(id); }
+}
+
+async function delAnot(aid, cid) {
+  if (!confirm("Remover?")) return;
+  await api("/anotacoes/"+aid,{method:"DELETE"});
+  abrirAnotacoes(cid);
+}
+
+// ─── HELPERS ──────────────────────────────────────────────────────────────────
+function v(id) { const el = document.getElementById(id); return el ? el.value : ""; }
+
+function abrirPainel() {
+  document.getElementById("side-panel").classList.add("on");
+  document.getElementById("overlay").classList.add("on");
+}
+function fecharPainel() {
+  document.getElementById("side-panel").classList.remove("on");
+  document.getElementById("overlay").classList.remove("on");
+}
+function notify(msg) {
+  const n = document.getElementById("notif");
+  n.textContent = msg; n.classList.add("show");
+  setTimeout(() => n.classList.remove("show"), 3200);
+}
+
+// ─── CONFIGURAÇÕES ────────────────────────────────────────────────────────────
+async function renderConfiguracoes(c) {
+  const cfg = await api("/config") || {};
+  const urlPublica = cfg.url_publica || "";
+
+  c.innerHTML = `
+    <div style="max-width:640px">
+
+      <!-- URL Pública (Ngrok) -->
+      <div class="stat-card" style="padding:20px;margin-bottom:20px">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px">
+          <div style="width:42px;height:42px;background:#E6F1FB;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px">🌐</div>
+          <div>
+            <div style="font-family:Syne,sans-serif;font-size:14px;font-weight:600">URL Pública — Link do Cliente</div>
+            <div style="font-size:12px;color:var(--text2);margin-top:2px">Configure para o link do cliente funcionar fora do escritório</div>
+          </div>
+        </div>
+
+        <div style="background:var(--amber-bg);border:1px solid #FAC775;border-radius:10px;padding:14px;margin-bottom:16px">
+          <div style="font-weight:600;color:var(--amber);margin-bottom:8px">📋 Como configurar o Ngrok:</div>
+          <div style="font-size:12px;color:var(--text2);line-height:1.8">
+            <b>1.</b> Baixe o Ngrok em <a href="https://ngrok.com/download" target="_blank" style="color:var(--blue)">ngrok.com/download</a><br>
+            <b>2.</b> Crie uma conta gratuita em <a href="https://ngrok.com" target="_blank" style="color:var(--blue)">ngrok.com</a><br>
+            <b>3.</b> Abra o terminal e rode: <code style="background:var(--surface);padding:2px 6px;border-radius:4px">ngrok http 5000</code><br>
+            <b>4.</b> Copie a URL que aparecer (ex: https://abc123.ngrok-free.app)<br>
+            <b>5.</b> Cole abaixo e salve
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">URL Pública do Ngrok</label>
+          <input class="form-input" id="cfg-url" placeholder="https://abc123.ngrok-free.app" value="${urlPublica}"/>
+          <div style="font-size:11px;color:var(--text3);margin-top:4px">Cole a URL do Ngrok aqui. O link do cliente usará esta URL automaticamente.</div>
+        </div>
+        <button class="btn btn-primary" style="width:100%" onclick="salvarConfig()">💾 Salvar URL</button>
+
+        ${urlPublica ? `
+        <div style="margin-top:16px;padding:14px;background:var(--green-bg);border:1px solid #C0DD97;border-radius:10px">
+          <div style="font-size:12px;font-weight:600;color:var(--green);margin-bottom:6px">✅ URL configurada:</div>
+          <div style="font-size:12px;color:var(--green);word-break:break-all;font-family:monospace">${urlPublica}</div>
+          <div style="font-size:11px;color:var(--green-mid);margin-top:6px">Os links dos clientes agora apontam para esta URL</div>
+        </div>` : ""}
+      </div>
+
+      <!-- Como funciona -->
+      <div class="stat-card" style="padding:20px;margin-bottom:20px">
+        <div style="font-family:Syne,sans-serif;font-size:14px;font-weight:600;margin-bottom:14px">🔗 Como funciona o link do cliente</div>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          ${[
+            ["1", "var(--blue-bg)", "var(--blue)", "Você clica em 'Link do cliente' no painel do cliente"],
+            ["2", "var(--blue-bg)", "var(--blue)", "O sistema gera um link único e seguro para aquele CPF"],
+            ["3", "var(--blue-bg)", "var(--blue)", "Você envia o link pelo WhatsApp para o cliente"],
+            ["4", "var(--green-bg)", "var(--green)", "O cliente clica no link e digita o próprio CPF"],
+            ["5", "var(--green-bg)", "var(--green)", "Aparece o status da declaração, histórico e restituição"],
+          ].map(([n,bg,cor,txt]) => `
+            <div style="display:flex;align-items:center;gap:12px">
+              <div style="width:28px;height:28px;border-radius:50%;background:${bg};color:${cor};font-size:12px;font-weight:700;font-family:Syne,sans-serif;display:flex;align-items:center;justify-content:center;flex-shrink:0">${n}</div>
+              <div style="font-size:13px">${txt}</div>
+            </div>`).join("")}
+        </div>
+      </div>
+
+      <!-- Informações do sistema -->
+      <div class="stat-card" style="padding:20px">
+        <div style="font-family:Syne,sans-serif;font-size:14px;font-weight:600;margin-bottom:14px">ℹ️ Informações do sistema</div>
+        <div style="display:flex;flex-direction:column;gap:8px;font-size:13px">
+          <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)"><span style="color:var(--text2)">Servidor local</span><span style="font-family:monospace">http://localhost:5000</span></div>
+          <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)"><span style="color:var(--text2)">URL pública</span><span style="font-family:monospace;font-size:12px;color:${urlPublica?"var(--green)":"var(--red)"}">${urlPublica||"Não configurada"}</span></div>
+          <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)"><span style="color:var(--text2)">Total clientes</span><span style="font-weight:600">${stats.total||0}</span></div>
+          <div style="display:flex;justify-content:space-between;padding:8px 0"><span style="color:var(--text2)">Versão</span><span style="color:var(--text3)">IR Monitor 2026</span></div>
+        </div>
+      </div>
+
+    </div>
+  `;
+}
+
+async function salvarConfig() {
+  const url = (document.getElementById("cfg-url")||{}).value.trim().replace(/\/+$/, "");
+  if (!url) { notify("Digite a URL do Ngrok"); return; }
+  if (!url.startsWith("http")) { notify("URL inválida — deve começar com https://"); return; }
+  const r = await api("/config", {method:"POST", body:{url_publica: url}});
+  if (r && !r.erro) {
+    notify("URL salva! Links do cliente agora usam: " + url);
+    renderConfiguracoes(document.getElementById("content"));
+  } else notify("Erro ao salvar");
+}
+
+function exportarCSV() { window.open("/api/exportar/clientes","_blank"); notify("Exportando..."); }
+
+
+// ─── Anexos (Malha Fina) ──────────────────────────────────────────────────────
+async function carregarAnexosEdit(cid) {
+  if (!cid) return;
+  const anexos = await api("/clientes/" + cid + "/anexos") || [];
+  const div = document.getElementById("lista-anexos-edit");
+  if (!div) return;
+  if (anexos.length === 0) { div.innerHTML = ""; return; }
+  div.innerHTML = anexos.map(a =>
+    `<div style="display:flex;align-items:center;justify-content:space-between;background:var(--surface2);border-radius:7px;padding:8px 12px;margin-bottom:6px">
+      <div style="display:flex;align-items:center;gap:8px">
+        <span style="font-size:16px">${a.tipo && a.tipo.includes("image") ? "🖼️" : "📄"}</span>
+        <div><div style="font-size:13px;font-weight:500">${a.nome}</div><div style="font-size:11px;color:var(--text3)">${(a.criado_em||"").split(" ")[0]}</div></div>
+      </div>
+      <div style="display:flex;gap:6px">
+        <a href="/api/anexos/${a.id}" target="_blank" class="btn btn-outline btn-sm">↓ Baixar</a>
+        <button class="btn btn-outline btn-sm" onclick="delAnexo(${a.id})">×</button>
+      </div>
+    </div>`
+  ).join("");
+}
+
+async function anexarArquivo(cid) {
+  const input = document.getElementById("anexo-file");
+  if (!input || !input.files.length) return;
+  const file = input.files[0];
+  if (file.size > 5 * 1024 * 1024) { notify("Arquivo muito grande (máx. 5MB)"); return; }
+  notify("Enviando anexo...");
+  const reader = new FileReader();
+  reader.onload = async function(e) {
+    const dados = e.target.result.split(",")[1]; // base64
+    const r = await api("/clientes/" + cid + "/anexos", {
+      method: "POST",
+      body: { nome: file.name, tipo: file.type, dados, descricao: "Notificação malha fina" }
+    });
+    if (r) { notify("Arquivo anexado!"); carregarAnexosEdit(cid); }
+    else notify("Erro ao anexar");
+  };
+  reader.readAsDataURL(file);
+}
+
+async function delAnexo(aid) {
+  if (!confirm("Remover anexo?")) return;
+  await api("/anexos/" + aid, {method:"DELETE"});
+  notify("Removido!"); carregarAnexosEdit(window._editClienteId);
+}
+
+// Mostrar anexos no detalhe do cliente também
+async function mostrarAnexosCliente(cid) {
+  const anexos = await api("/clientes/" + cid + "/anexos") || [];
+  if (!anexos.length) return "";
+  return `<div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border)">
+    <div style="font-family:Syne,sans-serif;font-size:13px;font-weight:600;margin-bottom:10px">📎 Documentos anexados</div>
+    ${anexos.map(a=>`<div style="display:flex;align-items:center;justify-content:space-between;background:var(--red-bg);border:1px solid #F7C1C1;border-radius:7px;padding:8px 12px;margin-bottom:6px">
+      <div style="display:flex;align-items:center;gap:8px"><span>${a.tipo&&a.tipo.includes("image")?"🖼️":"📄"}</span><div style="font-size:13px;font-weight:500">${a.nome}</div></div>
+      <a href="/api/anexos/${a.id}" target="_blank" class="btn btn-outline btn-sm">↓ Ver</a>
+    </div>`).join("")}
+  </div>`;
+}
+
+async function copiarLink(id) {
+  const data = await api("/cliente-link/"+id);
+  if (!data||data.erro) { notify("Erro ao gerar link"); return; }
+  // Usar URL pública configurada, ou localhost como fallback
+  const cfg = await api("/config") || {};
+  const baseUrl = cfg.url_publica || (window.location.protocol === 'file:' ? 'http://localhost:5000' : window.location.origin);
+  const link = baseUrl + data.link;
+  // Mostrar painel com o link visível
+  document.getElementById("panel-title").textContent = "🔗 Link do Cliente";
+  document.getElementById("panel-body").innerHTML = `
+    <div style="background:var(--blue-bg);border:1.5px solid #B5D4F4;border-radius:12px;padding:16px;margin-bottom:16px">
+      <div style="font-size:12px;color:var(--blue);font-weight:600;margin-bottom:6px">LINK DE CONSULTA DO CLIENTE</div>
+      <div style="font-size:12px;color:var(--blue);word-break:break-all;background:rgba(255,255,255,0.6);padding:10px;border-radius:7px;font-family:monospace">${link}</div>
+    </div>
+    <div style="font-size:13px;color:var(--text2);margin-bottom:16px;line-height:1.6">
+      Envie este link para o cliente. Ao acessar, ele digita o próprio CPF e vê o status da declaração.
+      <br/><br/>
+      <b>Como funciona:</b> o servidor precisa estar rodando (INICIAR_SERVIDOR.bat) para o cliente conseguir acessar.
+    </div>
+    <button class="btn btn-primary" style="width:100%;margin-bottom:8px" onclick="navigator.clipboard.writeText('${link}').then(()=>notify('Link copiado!'))">📋 Copiar link</button>
+    <button class="btn btn-outline" style="width:100%;margin-bottom:8px" onclick="window.open('${link}','_blank')">↗ Abrir no navegador</button>
+    <button class="btn btn-green" style="width:100%" onclick="compartilharWA('${link}')">💬 Enviar pelo WhatsApp</button>
+  `;
+  // Adicionar função de compartilhar por WhatsApp
+  window.compartilharWA = function(lnk) {
+    const txt = "Olá! Acesse o link abaixo para consultar o status da sua declaração de IR 2026:\n" + lnk + "\n\nDigite seu CPF para ver as informações.";
+    window.open("https://wa.me/?text=" + encodeURIComponent(txt), "_blank");
+  };
+  abrirPainel();
+}
+
+async function editarSenha(id) {
+  const s = prompt("Nova senha Gov.br:");
+  if (!s) return;
+  const r = await api("/clientes/"+id,{method:"PUT",body:{senha_gov:s}});
+  if (r&&!r.erro) { notify("Senha atualizada!"); const el=document.getElementById("spw"); if(el) el.value=s; }
+  else notify("Erro");
+}
+</script>
+</body>
+</html>
